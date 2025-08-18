@@ -3,7 +3,7 @@ import allure
 from utils.urls import Urls
 from pages.home_page import YaScooterHomePage
 from pages.order_page import YaScooterOrderPage
-from utils.locators import YaScooterOrderPageLocator
+from utils.locators import YaScooterOrderPageLocator, YaScooterHomePageLocator
 from utils.test_data import YaScooterOrderPageData as order_data
 
 
@@ -118,19 +118,29 @@ class TestYaScooterOrderPage:
     @allure.feature('Фича_Полный путь создания заказа')
     @allure.story('Стори_Оформление заказа и просмотр страницы заказа')
     @allure.title('Оформление заказа и переход на страницу с заказом')
-    @allure.description('Проверка что при успешном оформлении заказа, заказ отображается на странице "Статус заказа" ')
-    @pytest.mark.parametrize('data_set', ['data_set1', 'data_set2'])
-    def test_order_page_create_order_and_go_order_status(self, driver, data_set):
-        ya_scooter_order_page = YaScooterOrderPage(driver)
-        ya_scooter_order_page.go_to_site(Urls.ORDER_PAGE)
-        ya_scooter_home_page = YaScooterHomePage(driver)
-        ya_scooter_home_page.click_cookie_accept()
-        ya_scooter_order_page.fill_user_data(order_data.data_sets[data_set])
-        ya_scooter_order_page.go_next()
-        ya_scooter_order_page.fill_rent_data(order_data.data_sets[data_set])
-        ya_scooter_order_page.click_order()
-        ya_scooter_order_page.click_accept_order()
-        order_number = ya_scooter_order_page.get_order_number()
-        ya_scooter_order_page.click_go_to_status()
-        current_url = ya_scooter_order_page.current_url()
-        assert (Urls.ORDER_STATUS_PAGE in current_url) and (order_number in current_url)
+    @allure.description('Проверка что при успешном оформлении заказа, заказ отображается на странице "Статус заказа"')
+    @pytest.mark.parametrize('data_set, click_method', [
+    ('data_set1', YaScooterHomePageLocator.TOP_ORDER_BUTTON),
+    ('data_set2', YaScooterHomePageLocator.BOTTOM_ORDER_BUTTON),
+])
+    def test_order_page_create_order_and_go_order_status(self, driver, data_set, click_method):
+       ya_scooter_home_page = YaScooterHomePage(driver)
+       ya_scooter_home_page.go_to_site()
+       ya_scooter_home_page.click_cookie_accept()
+    
+
+       ya_scooter_home_page.click(click_method)
+    
+  
+       ya_scooter_order_page = YaScooterOrderPage(driver)
+       ya_scooter_order_page.wait_for_page_loaded()  # Этот метод нужно добавить в YaScooterOrderPage
+    
+       ya_scooter_order_page.fill_user_data(order_data.data_sets[data_set])
+       ya_scooter_order_page.go_next()
+       ya_scooter_order_page.fill_rent_data(order_data.data_sets[data_set])
+       ya_scooter_order_page.click_order()
+       ya_scooter_order_page.click_accept_order()
+       order_number = ya_scooter_order_page.get_order_number()
+       ya_scooter_order_page.click_go_to_status()
+       current_url = ya_scooter_order_page.current_url()
+       assert (Urls.ORDER_STATUS_PAGE in current_url) and (order_number in current_url)

@@ -1,10 +1,17 @@
 import re
-import allure
+
 from pages.base_page import BasePage
 from utils.locators import YaScooterOrderPageLocator as Locators
+import allure
 
 
 class YaScooterOrderPage(BasePage):
+    @allure.step('Ожидание загрузки страницы')
+    def wait_for_page_loaded(self):
+        """Ожидание загрузки страницы заказа"""
+        self.find_element(Locators.FIRST_NAME_INPUT, 10)
+        return True
+
     @allure.step('Ввод фамилии')
     def input_last_name(self, last_name: str):
         return self.find_element(Locators.LAST_NAME_INPUT).send_keys(last_name)
@@ -29,10 +36,6 @@ class YaScooterOrderPage(BasePage):
     @allure.step('Перейти на следующий этап заказа')
     def go_next(self):
         return self.find_element(Locators.NEXT_BUTTON).click()
-
-    @allure.step('Переключиться на вкладку браузера')
-    def switch_window(self, window_number: int = 1):
-        return self.driver.switch_to.window(self.driver.window_handles[window_number])
 
     @allure.step('Ввод даты')
     def input_date(self, date: str):
@@ -59,7 +62,7 @@ class YaScooterOrderPage(BasePage):
     def click_accept_order(self):
         return self.find_element(Locators.ACCEPT_ORDER_BUTTON).click()
 
-    @allure.step('Получить номер заказа')
+    @allure.step('Вычитать номер заказа')
     def get_order_number(self):
         about_order_text = self.find_element(Locators.ORDER_COMPLETED_INFO).text
         return ''.join(re.findall('[0-9]', about_order_text))
